@@ -1,0 +1,10 @@
+{
+  "name": "VirtualHere",
+  "author": "Jariullah Safi",
+  "flags": ["root"],
+  "publish": {
+    "tags": ["remoteplay"],
+    "description": "A plugin for using the Deck as a wireless controller using virtualhere",
+    "image": "https://github.com/safijari/VirtualHere/raw/main/virtualhere-screenshot.png"
+  }
+}
