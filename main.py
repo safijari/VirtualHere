@@ -12,6 +12,9 @@ import struct
 import subprocess
 import signal
 import time
+import asyncio
+import traceback
+from threading import Thread
 
 logger = decky_plugin.logger
 
@@ -33,7 +36,7 @@ class KeyStateMonitor:
         self.both_keys_pressed = False
         self.fd = open(self.device_path, "rb")
 
-    async def read_input_device(self):
+    def read_input_device(self):
         device_file = self.fd
 
         event_data = device_file.read(24)
@@ -54,12 +57,6 @@ class KeyStateMonitor:
                 and self.key_states[115] == 0
             ):
                 self.toggle_state = 1 - self.toggle_state
-                self.unbind_and_bind()
-
-                if self.toggle_state == 1:
-                    self.start_process()
-                else:
-                    self.stop_process()
 
                 self.both_keys_pressed = False
 
@@ -79,42 +76,63 @@ class ProcessManager:
             self.process.wait()
             self.process = None
 
+def poller(_key_state_monitor):
+    logger.info("poller initialized")
+    while True:
+        try:
+            _key_state_monitor.read_input_device()
+            # logger.info(f"reading done {Plugin._key_state_monitor.both_keys_pressed}")
+        except Exception:
+            logger.error(traceback.format_exc())
+
 
 class Plugin:
-    _listener_task = None
-    _enabled = True
+    _poll_task = None
+    _enabled = False
     _sent = False
     _key_state_monitor = KeyStateMonitor(
         "/dev/input/by-path/platform-i8042-serio-0-event-kbd"
     )
     _process_manager = None
+    _thread = None
 
     async def enable_proc(self):
-        logger.info("enable called")
-        # Plugin._key_state_monitor.start_process()
+        # logger.info("enable called")
+        Plugin._process_manager.start_process()
         Plugin._enabled = True
 
     async def disable_proc(self):
-        logger.info("disable called")
-        # Plugin._key_state_monitor.stop_process()
-        # unbind_and_rebind_sc()
+        # logger.info("disable called")
+        Plugin._process_manager.stop_process()
+        unbind_and_rebind_sc()
         Plugin._enabled = False
 
     async def is_enabled(self):
         return Plugin._enabled
 
-    async def listener(self):
-        await Plugin._key_state_monitor.read_input_device()
-        if Plugin._key_state_monitor.both_keys_pressed and not Plugin._sent:
-            Plugin._sent = True
-            return True
-        if Plugin._sent and not Plugin._key_state_monitor.both_keys_pressed:
-            Plugin._sent = False
-        return False
+    async def polled_fn(self):
+        # logger.info("Calling polled fn")
+        try:
+            # logger.info(f"{Plugin._sent} {Plugin._key_state_monitor.both_keys_pressed}")
+            if Plugin._key_state_monitor.both_keys_pressed and not Plugin._sent:
+                # logger.info(f"true sent")
+                Plugin._sent = True
+                return True
+            if Plugin._sent and not Plugin._key_state_monitor.both_keys_pressed:
+                # logger.info("false unsent")
+                Plugin._sent = False
+            return False
+        except Exception:
+            logger.info("failed " + traceback.format_exc())
 
     async def _main(self):
         try:
-            decky_plugin.logger.info("Initialized")
+            # loop = asyncio.get_event_loop()
+            # self._poll_task = loop.create_task(Plugin.poller(self))
+            Plugin._thread = Thread(target=lambda: poller(Plugin._key_state_monitor))
+            Plugin._thread.daemon = True
+            Plugin._thread.start()
             Plugin._process_manager = ProcessManager("/home/deck/vhusbdx86_64")
+            decky_plugin.logger.info("Initialized")
         except Exception:
             decky_plugin.logger.exception("main")

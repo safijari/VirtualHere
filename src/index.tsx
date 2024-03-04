@@ -18,11 +18,13 @@ import { VscDebugDisconnect } from "react-icons/vsc";
 import logo from "../assets/logo.png";
 
 async function backgroundLoop(serverAPI: ServerAPI): Promise<void> {
-    let ret = await serverAPI.callPluginMethod('listener', {});
+    let ret = await serverAPI.callPluginMethod('polled_fn', {});
     if (ret.result == true) {
         Navigation.OpenQuickAccessMenu();
     }
-    backgroundLoop(serverAPI);
+    setTimeout(() => {
+        backgroundLoop(serverAPI);
+    }, 100)
 }
 
 const Content: VFC<{ serverAPI: ServerAPI }> = ({ serverAPI }) => {
@@ -31,15 +33,10 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({ serverAPI }) => {
     const onClick = async (e: any) => {
         let res;
         if (e) {
-            console.log("enable");
             res = await serverAPI.callPluginMethod('enable_proc', {});
-            console.log("enable");
         } else {
-            console.log("disable");
             res = await serverAPI.callPluginMethod('disable_proc', {});
-            console.log("disable");
         }
-        console.log(res);
     };
 
     const initState = async () => {
@@ -64,14 +61,13 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({ serverAPI }) => {
 };
 
 export default definePlugin((serverApi: ServerAPI) => {
-    console.log("router");
-    console.log(Navigation);
-    // backgroundLoop(serverApi);
+    backgroundLoop(serverApi);
     return {
         title: <div className={staticClasses.Title}>Screentshot Aggregator</div>,
         content: <Content serverAPI={serverApi} />,
         icon: <VscDebugDisconnect />,
         onDismount() {
         },
+        alwaysRender: true,
     };
 });
