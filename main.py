@@ -41,7 +41,7 @@ class KeyStateMonitor:
         self.run_shell_command('echo "3-3" | sudo tee /sys/bus/usb/drivers/usb/unbind')
         self.run_shell_command('echo "3-3" | sudo tee /sys/bus/usb/drivers/usb/bind')
 
-    def read_input_device(self):
+    async def read_input_device(self):
         device_file = self.fd
 
         event_data = device_file.read(24)
@@ -57,7 +57,6 @@ class KeyStateMonitor:
 
             if self.key_states[114] != 0 and self.key_states[115] != 0:
                 self.both_keys_pressed = True
-                # print("Both keys are pressed!")
 
             elif self.both_keys_pressed and self.key_states[114] == 0 and self.key_states[115] == 0:
                 self.toggle_state = 1 - self.toggle_state
@@ -76,6 +75,7 @@ class KeyStateMonitor:
 class Plugin:
     _listener_task = None
     _enabled = False
+    _sent = False
     _key_state_monitor = KeyStateMonitor('/dev/input/by-path/platform-i8042-serio-0-event-kbd', '/home/deck/vhusbdx86_64')
 
     async def enable(self):
@@ -94,17 +94,22 @@ class Plugin:
         return Plugin._enabled
 
     async def listener(self):
-        decky_plugin.logger.info("listener started")
-        while True:
-            try:
-                Plugin._key_state_monitor.read_input_device()
-            except Exception:
-                decky_plugin.logger.exception("listener")
+        decky_plugin.logger.info(f"listener started {Plugin._sent} {Plugin._key_state_monitor.both_keys_pressed}")
+        await Plugin._key_state_monitor.read_input_device()
+        if Plugin._key_state_monitor.both_keys_pressed and not Plugin._sent:
+            decky_plugin.logger.info(f"Sending now")
+            Plugin._sent = True
+            return True
+        if Plugin._sent and not Plugin._key_state_monitor.both_keys_pressed:
+            decky_plugin.logger.info(f"resetting sent")
+            Plugin._sent = False
+        decky_plugin.logger.info(f"default path")
+        return False
 
     async def _main(self):
         try:
-            loop = asyncio.get_event_loop()
-            Plugin._listener_task = loop.create_task(Plugin.listener(self))
+            # loop = asyncio.get_event_loop()
+            # Plugin._listener_task = loop.create_task(Plugin.listener(self))
             decky_plugin.logger.info("Initialized")
         except Exception:
             decky_plugin.logger.exception("main")
