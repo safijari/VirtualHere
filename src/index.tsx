@@ -28,8 +28,18 @@ async function backgroundLoop(serverAPI: ServerAPI): Promise<void> {
 const Content: VFC<{ serverAPI: ServerAPI }> = ({ serverAPI }) => {
     const [enabled, setEnabled] = useState<boolean>(false);
 
-    const onClick = async (e) => {
-        serverAPI.callPluginMethod('set_enabled', { enabled: e });
+    const onClick = async (e: any) => {
+        let res;
+        if (e) {
+            console.log("enable");
+            res = await serverAPI.callPluginMethod('enable_proc', {});
+            console.log("enable");
+        } else {
+            console.log("disable");
+            res = await serverAPI.callPluginMethod('disable_proc', {});
+            console.log("disable");
+        }
+        console.log(res);
     };
 
     const initState = async () => {
@@ -46,7 +56,7 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({ serverAPI }) => {
                 <ToggleField
                     label="Enable"
                     checked={enabled}
-                    onChange={(e) => { setEnabled(e); onClick(e); }}
+                    onChange={(e) => { onClick(e); }}
                 />
             </PanelSectionRow>
         </PanelSection>
@@ -56,7 +66,7 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({ serverAPI }) => {
 export default definePlugin((serverApi: ServerAPI) => {
     console.log("router");
     console.log(Navigation);
-    backgroundLoop(serverApi);
+    // backgroundLoop(serverApi);
     return {
         title: <div className={staticClasses.Title}>Screentshot Aggregator</div>,
         content: <Content serverAPI={serverApi} />,

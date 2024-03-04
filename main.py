@@ -82,22 +82,22 @@ class ProcessManager:
 
 class Plugin:
     _listener_task = None
-    _enabled = False
+    _enabled = True
     _sent = False
     _key_state_monitor = KeyStateMonitor(
         "/dev/input/by-path/platform-i8042-serio-0-event-kbd"
     )
     _process_manager = None
 
-    async def enable(self):
-        decky_plugin.logger.info("enable called")
-        Plugin._key_state_monitor.start_process()
+    async def enable_proc(self):
+        logger.info("enable called")
+        # Plugin._key_state_monitor.start_process()
         Plugin._enabled = True
 
-    async def disable(self):
-        decky_plugin.logger.info("disable called")
-        Plugin._key_state_monitor.stop_process()
-        unbind_and_rebind_sc()
+    async def disable_proc(self):
+        logger.info("disable called")
+        # Plugin._key_state_monitor.stop_process()
+        # unbind_and_rebind_sc()
         Plugin._enabled = False
 
     async def is_enabled(self):
