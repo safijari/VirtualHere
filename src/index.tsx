@@ -18,7 +18,7 @@ import { VscDebugDisconnect } from "react-icons/vsc";
 import logo from "../assets/logo.png";
 
 async function backgroundLoop(serverAPI: ServerAPI): Promise<void> {
-    let ret = await serverAPI.callPluginMethod('listener', { });
+    let ret = await serverAPI.callPluginMethod('listener', {});
     if (ret.result == true) {
         Navigation.OpenQuickAccessMenu();
     }
@@ -48,12 +48,6 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({ serverAPI }) => {
                     checked={enabled}
                     onChange={(e) => { setEnabled(e); onClick(e); }}
                 />
-            </PanelSectionRow>
-            <PanelSectionRow>
-                <div>You need to pair it first in desktop mode.</div>
-            </PanelSectionRow>
-            <PanelSectionRow>
-                <div>Remember to turn it off when you are not using it!</div>
             </PanelSectionRow>
         </PanelSection>
     );

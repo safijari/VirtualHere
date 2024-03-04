@@ -65,6 +65,10 @@ class KeyStateMonitor:
 
 
 class ProcessManager:
+    def __init__(self, path):
+        self.process_path = path
+        self.process = None
+
     def start_process(self):
         if self.process is None or self.process.poll() is not None:
             self.process = subprocess.Popen([self.process_path])
@@ -73,10 +77,7 @@ class ProcessManager:
         if self.process is not None and self.process.poll() is None:
             self.process.terminate()
             self.process.wait()
-
-    def __init__(self, path):
-        self.process_path = path
-        self.process = None
+            self.process = None
 
 
 class Plugin:
@@ -91,13 +92,12 @@ class Plugin:
     async def enable(self):
         decky_plugin.logger.info("enable called")
         Plugin._key_state_monitor.start_process()
-        Plugin._key_state_monitor.toggle_state = 1
         Plugin._enabled = True
 
     async def disable(self):
-        decky_plugin.logger.info("enable called")
+        decky_plugin.logger.info("disable called")
         Plugin._key_state_monitor.stop_process()
-        Plugin._key_state_monitor.toggle_state = 0
+        unbind_and_rebind_sc()
         Plugin._enabled = False
 
     async def is_enabled(self):
