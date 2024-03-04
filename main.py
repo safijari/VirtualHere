@@ -103,8 +103,8 @@ class Plugin:
 
     async def disable_proc(self):
         # logger.info("disable called")
-        Plugin._process_manager.stop_process()
         unbind_and_rebind_sc()
+        Plugin._process_manager.stop_process()
         Plugin._enabled = False
 
     async def is_enabled(self):
