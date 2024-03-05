@@ -15,8 +15,6 @@ import time
 import asyncio
 import traceback
 from threading import Thread
-import requests
-import hashlib
 
 logger = decky_plugin.logger
 
@@ -128,26 +126,12 @@ class Plugin:
         except Exception:
             logger.info("failed " + traceback.format_exc())
 
-    async def download(self):
-        path = decky.DECKY_PLUGIN_DIR + "/vh"
-        if os.path.exists(path):
-            return path
-        res = requests.get(
-            "https://www.virtualhere.com/sites/default/files/usbserver/vhusbdx86_64"
-        )
-        if res.ok:
-            content = res.content
-            with open(path, "wb") as ff:
-                ff.write(content)
-        return path
-
     async def _main(self):
         try:
-            path = await Plugin.download(self)
             Plugin._thread = Thread(target=lambda: poller(Plugin._key_state_monitor))
             Plugin._thread.daemon = True
             Plugin._thread.start()
-            Plugin._process_manager = ProcessManager(path)
+            Plugin._process_manager = ProcessManager(decky.DECKY_PLUGIN_DIR + "/server")
             decky_plugin.logger.info("Initialized")
         except Exception:
             decky_plugin.logger.exception("main")
