@@ -131,7 +131,7 @@ class Plugin:
             Plugin._thread = Thread(target=lambda: poller(Plugin._key_state_monitor))
             Plugin._thread.daemon = True
             Plugin._thread.start()
-            Plugin._process_manager = ProcessManager(decky.DECKY_PLUGIN_DIR + "/server")
+            Plugin._process_manager = ProcessManager(decky_plugin.DECKY_PLUGIN_DIR + "/server")
             decky_plugin.logger.info("Initialized")
         except Exception:
             decky_plugin.logger.exception("main")
