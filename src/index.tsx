@@ -12,6 +12,7 @@ import {
     showContextMenu,
     staticClasses,
     Navigation,
+    QuickAccessTab,
 } from "decky-frontend-lib";
 import { VFC, useState, useEffect } from "react";
 import { VscDebugDisconnect } from "react-icons/vsc";
@@ -20,7 +21,7 @@ import logo from "../assets/logo.png";
 async function backgroundLoop(serverAPI: ServerAPI): Promise<void> {
     let ret = await serverAPI.callPluginMethod('polled_fn', {});
     if (ret.result == true) {
-        Navigation.OpenQuickAccessMenu();
+        Navigation.OpenQuickAccessMenu(QuickAccessTab.Decky);
     }
     setTimeout(() => {
         backgroundLoop(serverAPI);
