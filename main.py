@@ -121,7 +121,7 @@ class Plugin:
     async def polled_fn(self):
         # logger.info("Calling polled fn")
         try:
-            if time.time() - Plugin._last_coffee > 10 and Plguin._enabled:
+            if time.time() - Plugin._last_coffee > 10 and Plugin._enabled:
                 keyboard.press_and_release("scrlk")
                 keyboard.press_and_release("scrlk")
                 Plugin._last_coffee = time.time()
