@@ -16,6 +16,12 @@ import asyncio
 import traceback
 from threading import Thread
 
+import sys
+sys.path.append(os.path.dirname(__file__))
+
+from py_backend import keyboard
+
+
 logger = decky_plugin.logger
 
 
@@ -96,6 +102,7 @@ class Plugin:
     )
     _process_manager = None
     _thread = None
+    _last_coffee = time.time()
 
     async def enable_proc(self):
         # logger.info("enable called")
@@ -114,6 +121,11 @@ class Plugin:
     async def polled_fn(self):
         # logger.info("Calling polled fn")
         try:
+            if time.time() - Plugin._last_coffee > 10 and Plguin._enabled:
+                keyboard.press_and_release("scrlk")
+                keyboard.press_and_release("scrlk")
+                Plugin._last_coffee = time.time()
+                logger.info("pressing scroll lock to keep things awake")
             # logger.info(f"{Plugin._sent} {Plugin._key_state_monitor.both_keys_pressed}")
             if Plugin._key_state_monitor.both_keys_pressed and not Plugin._sent:
                 # logger.info(f"true sent")

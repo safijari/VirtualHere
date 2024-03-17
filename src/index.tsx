@@ -57,6 +57,12 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({ serverAPI }) => {
                     onChange={(e) => { onClick(e); }}
                 />
             </PanelSectionRow>
+            <PanelSectionRow>
+            <div>{"While the Deck controller is connected to another computer, it cannot interact with the Deck. Press both volume buttons together to open the QAM menu. If you disable VirtualHere, the controller will be connected back to the Deck."}</div>
+            </PanelSectionRow>
+            <PanelSectionRow>
+            <div>{"WARNING: While VirtualHere is enabled the Deck CANNOT go to sleep. Disable using the switch above when you're done."}</div>
+            </PanelSectionRow>
         </PanelSection>
     );
 };
